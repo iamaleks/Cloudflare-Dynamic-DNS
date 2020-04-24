@@ -6,13 +6,7 @@ using System.Collections.Generic;
 namespace CloudflareDynamicDNS
 {
     public class DNSUpdater
-    {
-        
-        /// <summary>
-        /// Zone ID from Cloudflare.
-        /// </summary>
-        private string dnsZoneID;
-        
+    {        
         /// <summary>
         /// FQDN of DNS entry to update.
         /// </summary>
@@ -23,6 +17,9 @@ namespace CloudflareDynamicDNS
         /// </summary>
         private string authorizationHeader;
 
+        /// <summary>
+        /// API Request Types.
+        /// </summary>
         enum APIRequestType {
             GetAllDomains, UpdateDomain
         }
@@ -40,12 +37,11 @@ namespace CloudflareDynamicDNS
         /// <param name="dnsDomain">FQDN of DNS entry to update.</param>
         /// <param name="apiKey">API Key token issued by Cloudflare.</param>
         public DNSUpdater(string dnsZoneID, string dnsDomain, string apiKey) {
-            this.dnsZoneID = dnsZoneID;
             this.dnsDomain = dnsDomain;
             this.authorizationHeader = string.Format("Bearer {0}", apiKey);;
 
             apiRequestQueries = new Dictionary<APIRequestType, string>();
-            apiRequestQueries.Add(APIRequestType.GetAllDomains, "https://api.cloudflare.com/client/v4/zones/{0}/dns_records/");
+            apiRequestQueries.Add(APIRequestType.GetAllDomains, string.Format("https://api.cloudflare.com/client/v4/zones/{0}/dns_records/", dnsZoneID));
         }
 
         /// <summary>
@@ -57,15 +53,21 @@ namespace CloudflareDynamicDNS
 
         }
 
+        /// <summary>
+        /// Fetch the ID associated with the FQDN (dnsDomain) passed to the instance.
+        /// </summary>
+        /// <returns>
+        /// Returns the ID in the form of a string.
+        /// </returns>
         private string GetDomainID() {
 
-            string getAllDNSRecordsQuery = string.Format(apiRequestQueries[APIRequestType.GetAllDomains], dnsZoneID);
-             
+            // Setup headers
             WebHeaderCollection requestHeaders = new WebHeaderCollection();
             requestHeaders.Add(HttpRequestHeader.Authorization, authorizationHeader);
             requestHeaders.Add(HttpRequestHeader.ContentType, "application/json");
 
-            string requestContents = SendGetRequest(getAllDNSRecordsQuery, requestHeaders);
+            // Send API request
+            string requestContents = SendGetRequest(apiRequestQueries[APIRequestType.GetAllDomains], requestHeaders);
 
             return requestContents;
         }
