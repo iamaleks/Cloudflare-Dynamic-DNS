@@ -54,11 +54,6 @@ namespace CloudflareDynamicDNS
 
         }
 
-        private bool DomainOccurOnce() {
-            // TODO implement this to check that a domaim only occurs once, throw exception otherwise
-            return false;
-        }
-
         /// <summary>
         /// Fetch the ID associated with the FQDN (dnsDomain) passed to the instance.
         /// </summary>
@@ -75,15 +70,37 @@ namespace CloudflareDynamicDNS
             // Send API request
             string requestContents = SendGetRequest(apiRequestQueries[APIRequestType.GetAllDomains], requestHeaders);
 
+            // Create object out of JSON
             dynamic deserializedJsonObject = JsonConvert.DeserializeObject(requestContents);
+
+            // Get the amount of times the domain occurs
+            int occurCount = 0;
 
             foreach (var dnsEntry in deserializedJsonObject.result) {
                 if (dnsEntry.name == dnsDomain) {
-                    return dnsEntry.id;
+                    occurCount++;
                 }
             }
 
-            return "FAILL"; // TODO make an exception to throw that an ID was not found
+            if (occurCount == 0) {
+                // Error, the domain does not exist in the DNS zone
+                // TODO throw exception
+            }
+            else if (occurCount > 1) {
+                // Error, this domain shows up more than once in the DNS zone
+                // TODO throw exception
+            }
+
+            // Find the ID of the domain
+            string currentDomainID = string.Empty;
+
+            foreach (var dnsEntry in deserializedJsonObject.result) {
+                if (dnsEntry.name == dnsDomain) {
+                    currentDomainID = dnsEntry.id;
+                }
+            }
+
+            return currentDomainID;
         }
 
         /// <summary>
