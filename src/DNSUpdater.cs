@@ -2,6 +2,7 @@ using System.Net;
 using System.IO;
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace CloudflareDynamicDNS
 {
@@ -53,6 +54,11 @@ namespace CloudflareDynamicDNS
 
         }
 
+        private bool DomainOccurOnce() {
+            // TODO implement this to check that a domaim only occurs once, throw exception otherwise
+            return false;
+        }
+
         /// <summary>
         /// Fetch the ID associated with the FQDN (dnsDomain) passed to the instance.
         /// </summary>
@@ -69,7 +75,15 @@ namespace CloudflareDynamicDNS
             // Send API request
             string requestContents = SendGetRequest(apiRequestQueries[APIRequestType.GetAllDomains], requestHeaders);
 
-            return requestContents;
+            dynamic deserializedJsonObject = JsonConvert.DeserializeObject(requestContents);
+
+            foreach (var dnsEntry in deserializedJsonObject.result) {
+                if (dnsEntry.name == dnsDomain) {
+                    return dnsEntry.id;
+                }
+            }
+
+            return "FAILL"; // TODO make an exception to throw that an ID was not found
         }
 
         /// <summary>
