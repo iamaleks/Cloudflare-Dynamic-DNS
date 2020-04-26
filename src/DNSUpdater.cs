@@ -29,6 +29,11 @@ namespace CloudflareDynamicDNS
         private string newPublicAddress;
 
         /// <summary>
+        /// What to set the CloudFlare proxied option to
+        /// </summary>
+        private string proxyOption;
+
+        /// <summary>
         /// API Request Types.
         /// </summary>
         enum APIRequestType {
@@ -48,11 +53,12 @@ namespace CloudflareDynamicDNS
         /// <param name="dnsDomain">FQDN of DNS entry to update.</param>
         /// <param name="apiKey">API Key token issued by Cloudflare.</param>
         /// <param name="newPublicAddress">New public IP address to update the domain with.</param>
-        public DNSUpdater(string dnsZoneID, string dnsDomain, string apiKey, string newPublicAddress) {
+        public DNSUpdater(string dnsZoneID, string dnsDomain, string apiKey, string newPublicAddress, bool proxyOption) {
             this.dnsDomain = dnsDomain;
             this.authorizationHeader = string.Format("Bearer {0}", apiKey);
             this.newPublicAddress = newPublicAddress;
             this.dnsZoneID = dnsZoneID;
+            this.proxyOption = proxyOption.ToString().ToLower();
 
             apiRequestQueries = new Dictionary<APIRequestType, string>();
             apiRequestQueries.Add(APIRequestType.GetAllDomains, "https://api.cloudflare.com/client/v4/zones/{0}/dns_records/");
@@ -162,8 +168,8 @@ namespace CloudflareDynamicDNS
                 requestHeaders.Add(HttpRequestHeader.Authorization, authorizationHeader);
                 requestHeaders.Add(HttpRequestHeader.ContentType, "application/json");
 
-                // Format post data 
-                string postData = string.Format("{{\"type\":\"A\",\"name\":\"{0}\",\"content\":\"{1}\",\"ttl\":1}}", dnsDomain, newPublicAddress); 
+                // Format post data
+                string postData = string.Format("{{\"type\":\"A\",\"name\":\"{0}\",\"content\":\"{1}\",\"ttl\":1,\"proxied\":{2}}}", dnsDomain, newPublicAddress, proxyOption); 
 
                 // Send API request
                 string requestURL = string.Format(apiRequestQueries[APIRequestType.UpdateDomain], dnsZoneID, domainID);
