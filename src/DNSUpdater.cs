@@ -84,11 +84,11 @@ namespace CloudflareDynamicDNS
 
             if (occurCount == 0) {
                 // Error, the domain does not exist in the DNS zone
-                // TODO throw exception
+                throw new DomainDoesNotExist("Domain entered does not exist in the current DNS zone within CloudFlare.");
             }
             else if (occurCount > 1) {
                 // Error, this domain shows up more than once in the DNS zone
-                // TODO throw exception
+                throw new DomainOccursMoreThanOnce("Domain entered occurs more than once in the current DNS zone within CloudFlare");
             }
 
             // Find the ID of the domain
@@ -146,6 +146,34 @@ namespace CloudflareDynamicDNS
             }
 
             return content;
+        }
+    }
+
+    /// <summary>
+    /// A domain entry does not exist within the DNS Zone
+    /// </summary>
+    class DomainDoesNotExist : Exception {
+
+        public DomainDoesNotExist() {
+
+        }
+
+        public DomainDoesNotExist(string message) : base(message) {
+
+        }
+    }
+
+    /// <summary>
+    /// There is more than 1 instance of a domain entered within CloudFlare
+    /// </summary>
+    class DomainOccursMoreThanOnce : Exception {
+
+        public DomainOccursMoreThanOnce() {
+            
+        }
+
+        public DomainOccursMoreThanOnce(string message) : base(message) {
+
         }
     }
 }
