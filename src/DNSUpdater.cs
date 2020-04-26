@@ -19,10 +19,20 @@ namespace CloudflareDynamicDNS
         private string authorizationHeader;
 
         /// <summary>
+        /// Zone ID from CloudFlare
+        /// </summary>
+        private string dnsZoneID;
+
+        /// <summary>
+        /// New public IP address to update domain with.
+        /// </summary>
+        private string newPublicAddress;
+
+        /// <summary>
         /// API Request Types.
         /// </summary>
         enum APIRequestType {
-            GetAllDomains, UpdateDomain
+            GetAllDomains, UpdateDomain, GetSpecificDomain
         }
 
         /// <summary>
@@ -37,12 +47,17 @@ namespace CloudflareDynamicDNS
         /// <param name="dnsZoneID">Zone ID from Cloudflare.</param>
         /// <param name="dnsDomain">FQDN of DNS entry to update.</param>
         /// <param name="apiKey">API Key token issued by Cloudflare.</param>
-        public DNSUpdater(string dnsZoneID, string dnsDomain, string apiKey) {
+        /// <param name="newPublicAddress">New public IP address to update the domain with.</param>
+        public DNSUpdater(string dnsZoneID, string dnsDomain, string apiKey, string newPublicAddress) {
             this.dnsDomain = dnsDomain;
-            this.authorizationHeader = string.Format("Bearer {0}", apiKey);;
+            this.authorizationHeader = string.Format("Bearer {0}", apiKey);
+            this.newPublicAddress = newPublicAddress;
+            this.dnsZoneID = dnsZoneID;
 
             apiRequestQueries = new Dictionary<APIRequestType, string>();
-            apiRequestQueries.Add(APIRequestType.GetAllDomains, string.Format("https://api.cloudflare.com/client/v4/zones/{0}/dns_records/", dnsZoneID));
+            apiRequestQueries.Add(APIRequestType.GetAllDomains, "https://api.cloudflare.com/client/v4/zones/{0}/dns_records/");
+            apiRequestQueries.Add(APIRequestType.UpdateDomain, "https://api.cloudflare.com/client/v4/zones/{0}/dns_records/{1}");
+            apiRequestQueries.Add(APIRequestType.GetSpecificDomain, "https://api.cloudflare.com/client/v4/zones/{0}/dns_records/{1}");
         }
 
         /// <summary>
@@ -50,8 +65,13 @@ namespace CloudflareDynamicDNS
         /// </summary>
         public void UpdateDomain() {
 
-            Console.WriteLine(GetDomainID());
+            // Get ID of domain
+            string domainID = GetDomainID();
 
+            // Check if an update is needed, if so perform the update
+            if (IsIPAddressDifferent(domainID)) {
+                UpdateIPAddress(domainID);
+            }
         }
 
         /// <summary>
@@ -68,7 +88,8 @@ namespace CloudflareDynamicDNS
             requestHeaders.Add(HttpRequestHeader.ContentType, "application/json");
 
             // Send API request
-            string requestContents = SendGetRequest(apiRequestQueries[APIRequestType.GetAllDomains], requestHeaders);
+            string requestURL = string.Format(apiRequestQueries[APIRequestType.GetAllDomains], dnsZoneID);
+            string requestContents = SendGetRequest(requestURL, requestHeaders);
 
             // Create object out of JSON
             dynamic deserializedJsonObject = JsonConvert.DeserializeObject(requestContents);
@@ -106,17 +127,47 @@ namespace CloudflareDynamicDNS
         /// <summary>
         /// Check if external IP address differs from the IP address assoicted with DNS domain.
         /// </summary>
-        /// <returns>Boolean</returns>
-        private bool IsIPAddressDifferent() {
-            return false;
+        /// <param name="domainID">ID of the record to check.</param>
+        /// <returns></returns>
+        private bool IsIPAddressDifferent(string domainID) {
+
+            // Setup headers
+            WebHeaderCollection requestHeaders = new WebHeaderCollection();
+            requestHeaders.Add(HttpRequestHeader.Authorization, authorizationHeader);
+            requestHeaders.Add(HttpRequestHeader.ContentType, "application/json");
+
+            // Send API request
+            string requestURL = string.Format(apiRequestQueries[APIRequestType.GetSpecificDomain], dnsZoneID, domainID);
+            string requestContents = SendGetRequest(requestURL, requestHeaders);
+
+            // Create object out of JSON
+            dynamic deserializedJsonObject = JsonConvert.DeserializeObject(requestContents);
+
+            // Check current IP address in record against new public IP address
+            if (newPublicAddress.Equals(deserializedJsonObject.result["content"])) {
+                return false;
+            }
+            else {
+                return true;
+            }
         }
 
         /// <summary>
         /// Update domain with new IP address
         /// </summary>
-        /// <param name="ipAddress">New External IP Address</param>
-        private void UpdateIPAddress(string ipAddress) {
+        /// <param name="domainID">ID of record to update</param>
+        private void UpdateIPAddress(string domainID) {
+                // Setup headers
+                WebHeaderCollection requestHeaders = new WebHeaderCollection();
+                requestHeaders.Add(HttpRequestHeader.Authorization, authorizationHeader);
+                requestHeaders.Add(HttpRequestHeader.ContentType, "application/json");
 
+                // Format post data 
+                string postData = string.Format("{{\"type\":\"A\",\"name\":\"{0}\",\"content\":\"{1}\",\"ttl\":1}}", dnsDomain, newPublicAddress); 
+
+                // Send API request
+                string requestURL = string.Format(apiRequestQueries[APIRequestType.UpdateDomain], dnsZoneID, domainID);
+                SendPutRequest(requestURL, requestHeaders, postData);
         }
 
         /// <summary>
@@ -146,6 +197,25 @@ namespace CloudflareDynamicDNS
             }
 
             return content;
+        }
+
+        private void SendPutRequest(string url, WebHeaderCollection requestHeaders, string postData) {
+            
+            var request = (HttpWebRequest) WebRequest.Create(url);
+            request.Method = "PUT";
+            request.Headers = requestHeaders;
+            request.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+
+            
+            using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+            {
+                streamWriter.Write(postData);
+            }
+
+            var httpResponse = (HttpWebResponse)request.GetResponse();
+
+            //return httpResponse.ToString();
+            // TODO return both HTTP return code and JSON in order to double check everything
         }
     }
 
