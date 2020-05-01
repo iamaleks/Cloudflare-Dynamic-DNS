@@ -14,7 +14,7 @@ You can run the program using command line arguments or by specifying the values
 
 #### Command Line Arguments
 ```
-$ ./CloudflareDynamicDNS -a [APIKey] -z [ZoneID] -d [FQDN To Update] -p
+$ .\CloudflareDynamicDNS.exe --apitoken [APIKey] --zoneid [ZoneID] --domain [FQDN To Update] -p
 ```
 
 #### Envirnment Variables
