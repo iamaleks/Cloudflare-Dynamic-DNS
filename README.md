@@ -17,7 +17,7 @@ You can run the program using command line arguments or by specifying the values
 $ .\CloudflareDynamicDNS.exe --apitoken [APIKey] --zoneid [ZoneID] --domain [FQDN To Update] -p
 ```
 
-#### Envirnment Variables
+#### Envirnment Variables (Bash)
 
 ```
 $ export apitoken="[APIKey]"
