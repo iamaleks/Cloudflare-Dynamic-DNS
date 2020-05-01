@@ -4,6 +4,15 @@
 
 This will allow you to update a DNS record on CloudFlare with a newly updated IP address of your external network.
 
+## Parameters
+
+
+The following lists references to values that are required when running this program.
+* [APIKey] - API key issued by CloudFlare in order to access their service.
+* [ZoneID] - The Zone ID that the record to be updated is located in.
+* [FQDN To Update] - The FQDN of the record to update, for example ```home.example.com```.
+* Proxy Parameter - This is a boolean value that specfies whether to proxy though Clouflare.
+
 ## Usage
 
 ### Docker
