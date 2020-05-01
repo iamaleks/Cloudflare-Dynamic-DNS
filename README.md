@@ -11,7 +11,7 @@ This will allow you to update a DNS record on CloudFlare with a newly updated IP
 #### Simple Method
 
 ```
-$ docker run -d --name uptest -e apitoken='[APIKey]' -e zoneid='[ZoneID]' -e domain='[FQDN To Update]' -e proxy='false' docker.pkg.github.com/iamaleks/cloudflare-dynamic-dns/cloudflareupdater:current
+$ docker run -d --name uptest -e apitoken='[APIKey]' -e zoneid='[ZoneID]' -e domain='[FQDN To Update]' -e proxy='false' iamaleks/cloudflareupdater:current
 ```
 
 #### Manual Build
