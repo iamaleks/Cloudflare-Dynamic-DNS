@@ -10,7 +10,7 @@ This will allow you to update a DNS record on CloudFlare with a newly updated IP
 
 ### Command Line
 
-You can run the program using command line arguments or by specifying the values in envirnment variables.
+You can run the program using command line arguments or by specifying the values in envirnment variables. This program can be called using Cron or some other scheduling method.
 
 #### Command Line Arguments
 ```
