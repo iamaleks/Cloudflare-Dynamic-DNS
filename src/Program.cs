@@ -19,6 +19,15 @@ namespace CloudflareDynamicDNS
 
             [Option('p', "proxy", Required = false, HelpText = "Proxy through CloudFlare option.")]
             public bool Proxy { get; set; }
+
+            public bool ParametersSet() {
+                if (!string.IsNullOrEmpty(this.APIToken) && !string.IsNullOrEmpty(this.ZoneID) && !string.IsNullOrEmpty(this.DomainName)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
         }
 
         static void Main(string[] args)
@@ -56,8 +65,14 @@ namespace CloudflareDynamicDNS
            }
 
            // Perform update
-           DNSUpdater dnsUpdater = new DNSUpdater(commandLineOptions.ZoneID, commandLineOptions.DomainName, commandLineOptions.APIToken, currentIPAddress, commandLineOptions.Proxy);
-           dnsUpdater.UpdateDomain();
+           if (commandLineOptions != null) {
+
+               if (commandLineOptions.ParametersSet()) {
+                   DNSUpdater dnsUpdater = new DNSUpdater(commandLineOptions.ZoneID, commandLineOptions.DomainName, 
+                                                        commandLineOptions.APIToken, currentIPAddress, commandLineOptions.Proxy);
+                    dnsUpdater.UpdateDomain();
+               }
+           }
         }
     }
 }
