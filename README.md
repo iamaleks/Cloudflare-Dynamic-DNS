@@ -8,10 +8,11 @@ This will allow you to update a DNS record on CloudFlare with a newly updated IP
 
 
 The following lists references to values that are required when running this program.
-* [APIKey] - API key issued by CloudFlare in order to access their service.
-* [ZoneID] - The Zone ID that the record to be updated is located in.
-* [FQDN To Update] - The FQDN of the record to update, for example ```home.example.com```.
-* Proxy Parameter - This is a boolean value that specfies whether to proxy though Clouflare.
+The following lists references to values that are required when running this program.
+* **[APIKey]** - API key issued by CloudFlare in order to access their service.
+* **[ZoneID]** - The Zone ID that the record to be updated is located in.
+* **[FQDN To Update]** - The FQDN of the record to update, for example ```home.example.com```.
+* **Proxy Parameter** - This is a boolean value that specfies whether to proxy though Clouflare.
 
 ## Usage
 
@@ -20,7 +21,7 @@ The following lists references to values that are required when running this pro
 #### Simple Method
 
 ```
-$ docker run -d --name uptest -e apitoken='[APIKey]' -e zoneid='[ZoneID]' -e domain='[FQDN To Update]' -e proxy='false' iamaleks/cloudflareupdater:current
+$ docker run -d --name cf_updater -e apitoken='[APIKey]' -e zoneid='[ZoneID]' -e domain='[FQDN To Update]' -e proxy='false' iamaleks/cloudflareupdater:latest
 ```
 
 #### Manual Build
@@ -29,7 +30,7 @@ $ docker run -d --name uptest -e apitoken='[APIKey]' -e zoneid='[ZoneID]' -e dom
 $ git clone https://github.com/iamaleks/Cloudflare-Dynamic-DNS.git
 $ cd Cloudflare-Dynamic-DNS
 $ docker build -f docker/Dockerfile -t updater .
-$ docker run -d --name uptest -e apitoken='[APIKey]' -e zoneid='[ZoneID]' -e domain='[FQDN To Update]' -e proxy='false' updater
+$ docker run -d --name cf_updater -e apitoken='[APIKey]' -e zoneid='[ZoneID]' -e domain='[FQDN To Update]' -e proxy='false' updater
 ```
 
 ### Command Line
