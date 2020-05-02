@@ -51,3 +51,18 @@ $ export domain="[FQDN To Update]"
 $ export proxy="true"
 $ ./CloudflareDynamicDNS
 ```
+
+### Compiling
+
+#### Compile for Specfic Runtime
+
+```
+$ dotnet publish -r win-x64 -c Release
+```
+
+#### Compile for all Runtimes
+
+```
+$ cd src
+$ bash build_all_runtimes.sh
+```
