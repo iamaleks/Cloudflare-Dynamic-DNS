@@ -5,5 +5,5 @@ declare -a runtimes=("win-x64" "win-x86" "win-arm" "win-arm64" "win7-x64" "win7-
 for i in "${runtimes[@]}"
 do
    echo "Bulding for runtime: $i"
-   dotnet publish -r $i -c Release
+   dotnet publish -r $i -c Release /p:PublishSingleFile=true /p:PublishTrimmed=true --self-contained
 done
